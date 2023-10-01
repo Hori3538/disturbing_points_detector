@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <node pkg="disturbing_points_detector" type="disturbing_points_detector_node" name="disturbing_points_detector_node" output="screen">
+    <rosparam file="$(find disturbing_points_detector)/config/param/disturbing_points_detector.yaml" command="load"/>
+  </node>
+</launch>

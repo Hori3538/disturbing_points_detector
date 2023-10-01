@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <node pkg="disturbing_points_detector" type="disturbing_points_detector_node" name="disturbing_points_detector_node" output="screen">
+    <!-- <rosparam file="$(find relative_navigator)/config/param/reference_trajectory_handler.yaml" command="load"/> -->
+  </node>
+
+  <!-- <node pkg="disturbing_points_detector" type="dummy_person_generator_node" name="dummy_person_generator_node" output="screen"> -->
+  <!-- </node> -->
+  <!--  -->
+    <node pkg="rviz" name="rviz" type="rviz" args="-d $(find disturbing_points_detector)/config/rviz/disturbing_points_detector.rviz" output="screen"/>
+</launch>
