@@ -1,7 +1,6 @@
 #ifndef DISTURBING_POINTS_DETECTOR
 #define DISTURBING_POINTS_DETECTOR
 
-#include "ros/publisher.h"
 #include <ros/ros.h>
 #include <nav_msgs/Path.h>
 #include <nav_msgs/OccupancyGrid.h>

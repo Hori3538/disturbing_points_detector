@@ -5,7 +5,7 @@ namespace disturbing_points_detector
     DisturbingPointsDetector::DisturbingPointsDetector(ros::NodeHandle &nh, ros::NodeHandle &private_nh)
     {
         private_nh.param<int>("hz", param_.hz, 30);
-        private_nh.param<float>("max_laser_range", param_.max_laser_range, 2.0);
+        private_nh.param<float>("max_laser_range", param_.max_laser_range, 5.0);
         private_nh.param<int>("offset_pixel", param_.offset_pixel, 3);
         private_nh.param<std::string>("laser_topic_name", param_.laser_topic_name, "/scan");
         private_nh.param<std::string>("map_topic_name", param_.map_topic_name, "/map");
