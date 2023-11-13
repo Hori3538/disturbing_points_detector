@@ -42,10 +42,9 @@ namespace disturbing_points_detector
             static geometry_msgs::Point create_point_from_laser(float range, float angle);
             static int coordinate_to_map_index(float x, float y, nav_msgs::OccupancyGrid &map);
             static bool occupancy_check(nav_msgs::OccupancyGrid &map, int map_index, int offset_pixel);
-            static bool is_within_range(int index, nav_msgs::OccupancyGrid &map);
+            static bool is_valid_index(int index, nav_msgs::OccupancyGrid &map);
 
             void filter_laser(sensor_msgs::LaserScan &scan);
-
 
             Param param_;
 
@@ -56,7 +55,7 @@ namespace disturbing_points_detector
             ros::Subscriber map_sub_;
             ros::Publisher filtered_laser_pub_;
 
-            //for test visualize
+            //for test
             ros::Publisher point_pub_;
 
             tf2_ros::Buffer tf_buffer_;

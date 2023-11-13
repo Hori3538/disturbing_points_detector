@@ -45,7 +45,7 @@ namespace disturbing_points_detector
     }
 
 
-    bool DisturbingPointsDetector::is_within_range(int index, nav_msgs::OccupancyGrid &map)
+    bool DisturbingPointsDetector::is_valid_index(int index, nav_msgs::OccupancyGrid &map)
     {
        if(index < 0) return false;
        if(index >= map.info.height * map.info.width) return false;
@@ -60,7 +60,7 @@ namespace disturbing_points_detector
             for(int dy_pixel = -offset_pixel; dy_pixel <= offset_pixel; dy_pixel++)
             {
                 const int target_pixel = map_index + dx_pixel + dy_pixel*map.info.width;
-                if(!is_within_range(target_pixel, map)) continue;
+                if(!is_valid_index(target_pixel, map)) continue;
 
                 if(map.data[target_pixel] == 100) return true;
             }
@@ -92,11 +92,7 @@ namespace disturbing_points_detector
             int map_index_of_point = coordinate_to_map_index(point_stamped.point.x, point_stamped.point.y, map_.value());
             bool occupancy_flag = occupancy_check(map_.value(), map_index_of_point, param_.offset_pixel); 
 
-            if(occupancy_flag)
-            {
-                range = NAN;
-                continue;
-            } 
+            if(occupancy_flag) range = NAN;
         }
     }
 
