@@ -76,7 +76,8 @@ namespace disturbing_points_detector
             float &range = scan.ranges[i];
             if(range > param_.max_laser_range)
             {
-                range = NAN;
+                range = 0; // NANの判定は面倒でバグの原因になるのでこっちのほうが良い.
+                // range = NAN;
                 continue;
             }
             const float angle = i * scan.angle_increment + scan.angle_min;
