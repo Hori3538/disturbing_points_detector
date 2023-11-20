@@ -1,8 +1,7 @@
 hz: 30
 max_laser_range: 3.0
-offset_pixel: 10
+not_disturbing_torelance_dist: 0.15
 laser_topic_name: "/scan"
 map_topic_name: "/map"
 laser_frame: "laser"
 map_fram: "map"
-

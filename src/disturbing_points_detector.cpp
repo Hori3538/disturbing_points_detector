@@ -6,7 +6,7 @@ namespace disturbing_points_detector
     {
         private_nh.param<int>("hz", param_.hz, 30);
         private_nh.param<float>("max_laser_range", param_.max_laser_range, 5.0);
-        private_nh.param<int>("offset_pixel", param_.offset_pixel, 3);
+        private_nh.param<float>("not_disturbing_torelance_dist", param_.not_disturbing_torelance_dist, 0.15);
         private_nh.param<std::string>("laser_topic_name", param_.laser_topic_name, "/scan");
         private_nh.param<std::string>("map_topic_name", param_.map_topic_name, "/map");
         private_nh.param<std::string>("laser_frame", param_.laser_frame, "laser");
@@ -15,7 +15,6 @@ namespace disturbing_points_detector
         laser_sub_ = nh.subscribe<sensor_msgs::LaserScan>(param_.laser_topic_name, 5, &DisturbingPointsDetector::laser_callback, this);
         map_sub_ = nh.subscribe<nav_msgs::OccupancyGrid>(param_.map_topic_name, 1, &DisturbingPointsDetector::map_callback, this);
         filtered_laser_pub_ = nh.advertise<sensor_msgs::LaserScan>("/disturbing_points_detector/filtered_laser", 1);
-        point_pub_ = nh.advertise<geometry_msgs::PointStamped>("/disturbing_points_detector/point", 1);
     }
     void DisturbingPointsDetector::laser_callback(const sensor_msgs::LaserScanConstPtr &msg)
     {
@@ -36,7 +35,7 @@ namespace disturbing_points_detector
         return point;
     }
 
-    int DisturbingPointsDetector::coordinate_to_map_index(float x, float y, nav_msgs::OccupancyGrid &map)
+    int DisturbingPointsDetector::coordinate_to_map_index(float x, float y, const nav_msgs::OccupancyGrid &map)
     {
         int index_x = int((x - map.info.origin.position.x) / map.info.resolution);
         int index_y = int((y - map.info.origin.position.y) / map.info.resolution);
@@ -44,17 +43,21 @@ namespace disturbing_points_detector
         return index_x + index_y * map.info.width;
     }
 
-
-    bool DisturbingPointsDetector::is_valid_index(int index, nav_msgs::OccupancyGrid &map)
+    bool DisturbingPointsDetector::is_valid_index(int index, const nav_msgs::OccupancyGrid &map)
     {
        if(index < 0) return false;
        if(index >= map.info.height * map.info.width) return false;
        return true;
     }
 
-    bool DisturbingPointsDetector::occupancy_check(nav_msgs::OccupancyGrid &map, int map_index,
-            int offset_pixel)
+    // map_index周辺に占有グリッドがあるか調べる
+    // 調べるのはmap_indexの周囲offset_pixel分(マンハッタン距離)
+    bool DisturbingPointsDetector::occupancy_check(const nav_msgs::OccupancyGrid &map, int map_index,
+            float not_disturbing_torelance_dist)
     {
+        int offset_pixel = int(not_disturbing_torelance_dist / map.info.resolution);
+        if(offset_pixel < 0) offset_pixel = 0;
+
         for(int dx_pixel = -offset_pixel; dx_pixel <= offset_pixel; dx_pixel++)
         {
             for(int dy_pixel = -offset_pixel; dy_pixel <= offset_pixel; dy_pixel++)
@@ -68,6 +71,7 @@ namespace disturbing_points_detector
         return false;
     }
 
+    // 地図点群とみなされた値を無効値にする
     // To Do この関数でかすぎるので分解する
     void DisturbingPointsDetector::filter_laser(sensor_msgs::LaserScan &scan)
     {
@@ -76,7 +80,7 @@ namespace disturbing_points_detector
             float &range = scan.ranges[i];
             if(range > param_.max_laser_range)
             {
-                range = 0; // NANの判定は面倒でバグの原因になるのでこっちのほうが良い.
+                range = 0.0; // NANの判定は面倒でバグの原因になるのでこっちのほうが良い.
                 // range = NAN;
                 continue;
             }
@@ -88,10 +92,8 @@ namespace disturbing_points_detector
             tf2::doTransform(point_stamped, point_stamped, transform_);
             point_stamped.header.frame_id = param_.map_frame;
 
-            point_pub_.publish(point_stamped);
-
-            int map_index_of_point = coordinate_to_map_index(point_stamped.point.x, point_stamped.point.y, map_.value());
-            bool occupancy_flag = occupancy_check(map_.value(), map_index_of_point, param_.offset_pixel); 
+            const int map_index_of_point = coordinate_to_map_index(point_stamped.point.x, point_stamped.point.y, map_.value());
+            const bool occupancy_flag = occupancy_check(map_.value(), map_index_of_point, param_.not_disturbing_torelance_dist); 
 
             if(occupancy_flag) range = NAN;
         }

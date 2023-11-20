@@ -20,7 +20,11 @@ namespace disturbing_points_detector
         int hz;
 
         float max_laser_range;
-        int offset_pixel;
+        // 地図点群とこの距離以内にある点群は地図点群とみなし，filteringする
+        // 正確には，この距離の地図におけるピクセル数を計算し，
+        // 観測点の周囲のマンハッタン距離でこのピクセル分以内に地図点群における占有点があったとき
+        // その観測点は地図のものであるとみなす
+        float not_disturbing_torelance_dist; 
 
         std::string laser_topic_name; 
         std::string map_topic_name;
@@ -40,9 +44,10 @@ namespace disturbing_points_detector
             void map_callback(const nav_msgs::OccupancyGridConstPtr &msg);
 
             static geometry_msgs::Point create_point_from_laser(float range, float angle);
-            static int coordinate_to_map_index(float x, float y, nav_msgs::OccupancyGrid &map);
-            static bool occupancy_check(nav_msgs::OccupancyGrid &map, int map_index, int offset_pixel);
-            static bool is_valid_index(int index, nav_msgs::OccupancyGrid &map);
+            static int coordinate_to_map_index(float x, float y, const nav_msgs::OccupancyGrid &map);
+            static bool occupancy_check(const nav_msgs::OccupancyGrid &map, int map_index,
+                                        float not_disturbing_torelance_dist);
+            static bool is_valid_index(int index, const nav_msgs::OccupancyGrid &map);
 
             void filter_laser(sensor_msgs::LaserScan &scan);
 
@@ -54,9 +59,6 @@ namespace disturbing_points_detector
             ros::Subscriber laser_sub_;
             ros::Subscriber map_sub_;
             ros::Publisher filtered_laser_pub_;
-
-            //for test
-            ros::Publisher point_pub_;
 
             tf2_ros::Buffer tf_buffer_;
             geometry_msgs::TransformStamped transform_; // tf laser_frame to map_frame
