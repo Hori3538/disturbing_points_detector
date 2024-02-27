@@ -95,7 +95,8 @@ namespace disturbing_points_detector
             const int map_index_of_point = coordinate_to_map_index(point_stamped.point.x, point_stamped.point.y, map_.value());
             const bool occupancy_flag = occupancy_check(map_.value(), map_index_of_point, param_.not_disturbing_torelance_dist); 
 
-            if(occupancy_flag) range = NAN;
+            if(occupancy_flag) range = 0.0;
+            // if(occupancy_flag) range = NAN;
         }
     }
 
